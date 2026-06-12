@@ -98,7 +98,7 @@ The shared vocabulary every service consumes. No service code before this.
 
 **Exit:** end-to-end integration test — ingest fixture report → diagnosis → action → PR/issue/quarantine → visible via API, entirely on fakes.
 
-### M9 — `web` dashboard (R9) `PLANNED`
+### M9 — `web` dashboard (R9) `DONE`
 React + Vite + Tailwind with a small design-token layer (near-monochrome: off-white ground, single gray scale, one restrained accent; muted green/amber/red only on test states and classifications; Inter; no gradients or decoration). shadcn/ui as a quiet base.
 
 Screens:
