@@ -91,7 +91,7 @@ The shared vocabulary every service consumes. No service code before this.
 
 **Exit:** PRs/issues created against the fake with correct bodies and merge gates; double-enforcement test that pr-service refuses auto-merge for anything but eligible `BENIGN_DRIFT`.
 
-### M8 — `api` + persistence + pipeline wiring `PLANNED`
+### M8 — `api` + persistence + pipeline wiring `DONE` (Postgres + BullMQ adapters written, untested against live services; in-memory is the tested default)
 - Postgres schema (projects, runs, results, diagnoses, actions, quarantine, flow traces, audit log, health snapshots) behind a repository layer with an in-memory fake; migrations included.
 - BullMQ queue wiring of M2–M7 into the event-driven pipeline; in-memory queue fake for tests.
 - REST API for the dashboard: projects, suite health (R9 metrics: pass/fail trend, breaks by classification, auto-heal rate, regressions caught, quarantine backlog, mean time-to-green), failures inbox, diagnosis detail, quarantine list, settings (merge policy, thresholds, repo connection).

@@ -26,11 +26,11 @@ export class FakeLlmClassifier implements LlmClassifier {
       };
     }
 
-    const relevantFiles = appDiff.files.filter(
-      (f) =>
-        evidence.relevantAppPaths.includes(f.path) ||
-        f.patch !== undefined,
-    );
+    // Scope signal analysis to files linked to this test; when no link is
+    // known, fall back to every patched file (weaker evidence, lower stakes).
+    const linkedFiles = appDiff.files.filter((f) => evidence.relevantAppPaths.includes(f.path));
+    const relevantFiles =
+      linkedFiles.length > 0 ? linkedFiles : appDiff.files.filter((f) => f.patch !== undefined);
 
     const removedFeatureFile = appDiff.files.find(
       (f) => f.status === 'removed' && evidence.relevantAppPaths.includes(f.path),
