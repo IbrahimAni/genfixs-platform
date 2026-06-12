@@ -83,7 +83,7 @@ The shared vocabulary every service consumes. No service code before this.
 
 **Exit:** heal fixture verifies green and produces a locator-only diff; a heal attempt that would touch an assertion is rejected by the guard with a test proving it; failed verification provably never reaches pr-service.
 
-### M7 — `pr-service` (R3, R4, R5) `PLANNED`
+### M7 — `pr-service` (R3, R4, R5) `DONE`
 - `GitHubClient` interface (least-privilege GitHub App shape) + full in-memory fake; real Octokit adapter stubbed for later credentials.
 - Structured PR bodies: classification, evidence, what drifted/changed, why it's safe / "is this intended?". Branch-protection honored.
 - Auto-merge call allowed **only** when the orchestrator's decided action carries auto-merge eligibility (re-checked here — defense in depth).
