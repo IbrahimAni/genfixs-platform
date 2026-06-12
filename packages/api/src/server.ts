@@ -1,8 +1,10 @@
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import cors from '@fastify/cors';
-import { MergePolicySchema, quarantineAgeDays } from '@genfixs/domain';
-import Fastify, { type FastifyInstance } from 'fastify';
+import { MergePolicySchema, ProjectSchema, quarantineAgeDays } from '@genfixs/domain';
+import Fastify, { type FastifyInstance, type FastifyRequest } from 'fastify';
 import { z } from 'zod';
-import { createAppContext, type AppContext } from './context.js';
+import { createAppContextFromEnv, type RuntimeReport } from './config.js';
+import type { AppContext } from './context.js';
 
 const IngestBodySchema = z.object({
   commitSha: z.string(),
@@ -16,11 +18,91 @@ const SettingsBodySchema = z.object({
   verificationBaseUrl: z.string().optional(),
 });
 
-export function buildServer(ctx: AppContext): FastifyInstance {
+const CreateProjectSchema = z.object({
+  name: z.string().min(1),
+  org: z.object({ id: z.string().min(1), name: z.string().min(1) }),
+  testRepo: z.object({
+    owner: z.string().min(1),
+    name: z.string().min(1),
+    defaultBranch: z.string().default('main'),
+  }),
+  appRepo: z
+    .object({
+      owner: z.string().min(1),
+      name: z.string().min(1),
+      defaultBranch: z.string().default('main'),
+    })
+    .optional(),
+  ciProvider: z.enum(['github-actions', 'gitlab-ci', 'other']).default('github-actions'),
+  framework: z.enum(['playwright', 'cypress']).default('playwright'),
+  verificationBaseUrl: z.string().optional(),
+});
+
+export interface ServerOptions {
+  report?: RuntimeReport;
+  apiToken?: string;
+  webhookSecret?: string;
+}
+
+export function buildServer(ctx: AppContext, options: ServerOptions = {}): FastifyInstance {
   const app = Fastify({ logger: false });
   void app.register(cors, { origin: true });
 
-  // R1: report ingestion entry point (webhook/CLI upload).
+  // Keep the raw body around for webhook HMAC verification.
+  app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, body, done) => {
+    (req as FastifyRequest & { rawBody?: string }).rawBody = body as string;
+    try {
+      done(null, body === '' ? {} : JSON.parse(body as string));
+    } catch (err) {
+      done(err as Error);
+    }
+  });
+
+  // Bearer-token auth when configured. /api/status stays open (it reports
+  // exactly this kind of configuration state); the webhook authenticates via HMAC.
+  app.addHook('onRequest', async (req, reply) => {
+    if (!options.apiToken) return;
+    if (req.url === '/api/status' || req.url.startsWith('/api/webhooks/')) return;
+    if (!req.url.startsWith('/api/')) return;
+    const header = req.headers.authorization;
+    if (header !== `Bearer ${options.apiToken}`) {
+      return reply.code(401).send({ error: 'missing or invalid API token' });
+    }
+  });
+
+  /** Which integrations are live vs awaiting credentials (see CREDENTIALS.md). */
+  app.get('/api/status', async () => {
+    return options.report ?? { startedAt: new Date().toISOString(), integrations: [] };
+  });
+
+  // Onboarding: connect a project (R1).
+  app.post('/api/projects', async (req, reply) => {
+    const body = CreateProjectSchema.parse(req.body);
+    const project = ProjectSchema.parse({
+      id: ctx.ids.next('proj'),
+      name: body.name,
+      org: body.org,
+      testRepo: { provider: 'github', ...body.testRepo },
+      ...(body.appRepo ? { appRepo: { provider: 'github', ...body.appRepo } } : {}),
+      ciProvider: body.ciProvider,
+      framework: body.framework,
+      policies: MergePolicySchema.parse({}),
+      ...(body.verificationBaseUrl ? { verificationBaseUrl: body.verificationBaseUrl } : {}),
+      createdAt: ctx.clock.now(),
+    });
+    await ctx.repos.projects.save(project);
+    await ctx.repos.audit.append({
+      id: ctx.ids.next('audit'),
+      projectId: project.id,
+      at: ctx.clock.now(),
+      actor: 'human',
+      type: 'project.created',
+      detail: { testRepo: `${project.testRepo.owner}/${project.testRepo.name}` },
+    });
+    return reply.code(201).send(project);
+  });
+
+  // R1: report ingestion entry point (CI uploader step or manual upload).
   app.post('/api/projects/:projectId/ingest', async (req, reply) => {
     const { projectId } = req.params as { projectId: string };
     const project = await ctx.repos.projects.get(projectId);
@@ -34,6 +116,47 @@ export function buildServer(ctx: AppContext): FastifyInstance {
       ...(body.lastGreenSha ? { lastGreenSha: body.lastGreenSha } : {}),
     });
     return reply.code(202).send({ runId: run.id, results: run.results.length });
+  });
+
+  /**
+   * GitHub webhook receiver (HMAC-verified). State transitions are audited;
+   * report delivery itself comes through the CI uploader (spec §10.1's
+   * "lightweight CLI step"), which carries the full Playwright JSON report —
+   * workflow_run artifacts don't, without an extra artifact-download round trip.
+   */
+  app.post('/api/webhooks/github', async (req, reply) => {
+    if (!options.webhookSecret) {
+      return reply
+        .code(503)
+        .send({ error: 'webhook secret not configured (GITHUB_WEBHOOK_SECRET)' });
+    }
+    const signature = req.headers['x-hub-signature-256'];
+    const rawBody = (req as FastifyRequest & { rawBody?: string }).rawBody ?? '';
+    const expected = `sha256=${createHmac('sha256', options.webhookSecret).update(rawBody).digest('hex')}`;
+    if (
+      typeof signature !== 'string' ||
+      signature.length !== expected.length ||
+      !timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
+    ) {
+      return reply.code(401).send({ error: 'invalid signature' });
+    }
+    const event = req.headers['x-github-event'];
+    const payload = req.body as { action?: string; repository?: { full_name?: string } };
+    const projects = await ctx.repos.projects.list();
+    const project = projects.find(
+      (p) => `${p.testRepo.owner}/${p.testRepo.name}` === payload.repository?.full_name,
+    );
+    if (project) {
+      await ctx.repos.audit.append({
+        id: ctx.ids.next('audit'),
+        projectId: project.id,
+        at: ctx.clock.now(),
+        actor: 'system',
+        type: 'webhook.received',
+        detail: { event, action: payload.action ?? null },
+      });
+    }
+    return reply.code(202).send({ received: true });
   });
 
   app.get('/api/projects', async () => {
@@ -172,14 +295,22 @@ export function buildServer(ctx: AppContext): FastifyInstance {
 
 const isMain = process.argv[1]?.endsWith('server.ts') || process.argv[1]?.endsWith('server.js');
 if (isMain) {
-  const ctx = createAppContext();
-  const app = buildServer(ctx);
+  const { ctx, report } = await createAppContextFromEnv();
+  const app = buildServer(ctx, {
+    report,
+    ...(process.env['GENFIXS_API_TOKEN'] ? { apiToken: process.env['GENFIXS_API_TOKEN'] } : {}),
+    ...(process.env['GITHUB_WEBHOOK_SECRET']
+      ? { webhookSecret: process.env['GITHUB_WEBHOOK_SECRET'] }
+      : {}),
+  });
   const port = Number(process.env['PORT'] ?? 4000);
-  app
-    .listen({ port, host: '0.0.0.0' })
-    .then(() => console.log(`GenFixs API listening on :${port}`))
-    .catch((err) => {
-      console.error(err);
-      process.exit(1);
-    });
+  await app.listen({ port, host: '0.0.0.0' });
+  console.log(`GenFixs API listening on :${port}`);
+  for (const integration of report.integrations) {
+    const status = integration.live ? 'LIVE' : 'DEGRADED';
+    console.log(
+      `  [${status}] ${integration.name}: ${integration.mode}` +
+        (integration.requires.length > 0 ? ` (needs: ${integration.requires.join(', ')})` : ''),
+    );
+  }
 }

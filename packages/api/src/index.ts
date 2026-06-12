@@ -5,3 +5,7 @@ export * from './pipeline.js';
 export * from './context.js';
 export * from './server.js';
 export * from './demo/seed.js';
+export * from './config.js';
+export * from './adapters/objectStores.js';
+export * from './adapters/bullmqQueue.js';
+export * from './repositories/postgres.js';

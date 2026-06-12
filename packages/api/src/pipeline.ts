@@ -21,6 +21,13 @@ import type { BrowserRunner, LlmClassifier } from '@genfixs/domain';
 import { PrService } from '@genfixs/pr-service';
 import type { Repositories } from './repositories/interfaces.js';
 
+/** Stable identity for "the same failure" across runs (DECISIONS.md D12). */
+export function failureFingerprint(testId: string, errorMessage: string): string {
+  // Volatile fragments (timings, pixel counts, ports) don't make a new failure.
+  const normalized = errorMessage.replace(/\d+/g, 'N').trim().toLowerCase();
+  return `${testId}::${normalized}`;
+}
+
 export interface PipelineDeps {
   repos: Repositories;
   queue: Queue;
@@ -77,8 +84,37 @@ export function wirePipeline(deps: PipelineDeps): void {
     const project = await repos.projects.get(event.projectId);
     if (!run || !project) throw new Error(`Unknown run/project for ${JSON.stringify(event)}`);
 
+    const activeQuarantine = new Set(
+      (await repos.quarantine.listByProject(project.id, 'active')).map((q) => q.testId),
+    );
+    const priorDiagnoses = await repos.diagnoses.listByProject(project.id);
+
     for (const result of run.results) {
       if (result.status !== 'failed') continue;
+
+      // Dedup (DECISIONS.md D12): a test already parked in quarantine, or a
+      // failure identical to one already diagnosed and acted on, is not
+      // re-diagnosed every run — that would spam duplicate PRs and issues.
+      if (activeQuarantine.has(result.testId)) continue;
+      const fingerprint = failureFingerprint(result.testId, result.failure?.errorMessage ?? '');
+      const duplicate = priorDiagnoses.find(
+        (d) =>
+          d.testId === result.testId &&
+          failureFingerprint(d.testId, d.evidence.failure.errorMessage) === fingerprint &&
+          d.decidedAction !== undefined,
+      );
+      if (duplicate) {
+        await audit({
+          projectId: project.id,
+          actor: 'system',
+          type: 'diagnosis.deduplicated',
+          testId: result.testId,
+          runId: run.id,
+          detail: { duplicateOf: duplicate.id, action: duplicate.decidedAction?.kind ?? null },
+        });
+        continue;
+      }
+
       const evidence = await evidenceBuilder.build(project, run, result);
       await repos.evidence.save(evidence);
       await audit({

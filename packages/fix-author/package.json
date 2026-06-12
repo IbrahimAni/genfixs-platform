@@ -12,6 +12,8 @@
   "dependencies": {
     "@genfixs/domain": "workspace:*",
     "@genfixs/evidence-builder": "workspace:*",
-    "prettier": "^3.4.0"
+    "prettier": "^3.4.0",
+    "@anthropic-ai/sdk": "^0.104.0",
+    "zod": "^3.25.0"
   }
 }
