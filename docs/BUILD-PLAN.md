@@ -29,12 +29,12 @@ These are enforced in the **action-orchestrator** (deterministic policy) and ass
 
 ## Milestones
 
-### M0 — Repo scaffold `PLANNED`
+### M0 — Repo scaffold `DONE`
 Monorepo bootstrap: pnpm workspaces, turborepo, shared tsconfig/eslint/prettier, vitest, CI-ready scripts (`build`, `test`, `lint`, `typecheck`). Empty package shells. `docs/DECISIONS.md` started.
 
 **Exit:** `pnpm build && pnpm test` green across all packages.
 
-### M1 — `domain` package (spec §9) `PLANNED`
+### M1 — `domain` package (spec §9) `DONE`
 The shared vocabulary every service consumes. No service code before this.
 
 - Types/entities: `Classification` enum, `Project`, `MergePolicy`, `TestRun`, `TestResult`, `FailureEvidence`, `Diagnosis`, `EvidenceBundle`, `AgentAction`, `IntentArtifact`, `SuiteHealthSnapshot`, `ArtifactRef`, `RepoRef`, `OrgRef`, audit-log event types.
