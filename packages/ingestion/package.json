@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@genfixs/domain": "workspace:*"
+    "@genfixs/domain": "workspace:*",
+    "fast-xml-parser": "^4.5.0",
+    "zod": "^3.24.0"
   }
 }

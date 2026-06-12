@@ -44,7 +44,7 @@ The shared vocabulary every service consumes. No service code before this.
 
 **Exit:** typed, validated, unit-tested; all later packages import only from here.
 
-### M2 — `ingestion` (R1) `PLANNED`
+### M2 — `ingestion` (R1) `DONE`
 - Playwright JSON report parser (first-class), JUnit XML parser (fallback) → normalized `TestRun`/`TestResult`/`FailureEvidence`.
 - Report upload endpoint + webhook receiver shape (stateless, queue-backed); artifacts (traces, screenshots, DOM snapshots) persisted to the object store with lifecycle metadata.
 - Emits `run.ingested`.
