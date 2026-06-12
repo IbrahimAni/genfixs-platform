@@ -125,8 +125,24 @@ export interface Settings {
   };
 }
 
+export class UnauthorizedError extends Error {}
+
+export function getToken(): string | null {
+  return localStorage.getItem('genfixs_token');
+}
+
+export function setToken(token: string): void {
+  localStorage.setItem('genfixs_token', token);
+}
+
+function authHeaders(): Record<string, string> {
+  const token = getToken();
+  return token ? { authorization: `Bearer ${token}` } : {};
+}
+
 async function get<T>(url: string): Promise<T> {
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: authHeaders() });
+  if (res.status === 401) throw new UnauthorizedError('API token required');
   if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
   return res.json() as Promise<T>;
 }
@@ -139,13 +155,32 @@ export const api = {
   quarantine: (id: string) => get<QuarantineRow[]>(`/api/projects/${id}/quarantine`),
   settings: (id: string) => get<Settings>(`/api/projects/${id}/settings`),
   releaseQuarantine: async (id: string) => {
-    const res = await fetch(`/api/quarantine/${id}/release`, { method: 'POST' });
+    const res = await fetch(`/api/quarantine/${id}/release`, {
+      method: 'POST',
+      headers: authHeaders(),
+    });
     if (!res.ok) throw new Error(await res.text());
+  },
+  createProject: async (body: {
+    name: string;
+    org: { id: string; name: string };
+    testRepo: { owner: string; name: string; defaultBranch: string };
+    appRepo?: { owner: string; name: string; defaultBranch: string };
+    verificationBaseUrl?: string;
+  }) => {
+    const res = await fetch('/api/projects', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...authHeaders() },
+      body: JSON.stringify(body),
+    });
+    if (res.status === 401) throw new UnauthorizedError('API token required');
+    if (!res.ok) throw new Error(await res.text());
+    return res.json() as Promise<{ id: string }>;
   },
   saveSettings: async (id: string, body: Partial<Settings>) => {
     const res = await fetch(`/api/projects/${id}/settings`, {
       method: 'PUT',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', ...authHeaders() },
       body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(await res.text());

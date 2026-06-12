@@ -51,9 +51,11 @@ the composition root (`packages/api/src/context.ts`).
 
 ## Run it
 
+### Development / demo
+
 ```bash
 pnpm install
-pnpm test        # full suite, including the end-to-end pipeline on fakes
+pnpm test        # full suite; live Postgres/Redis/browser tests run when available
 pnpm build       # typecheck all packages + build the dashboard
 
 # Demo mode: a seeded project covering every classification —
@@ -62,9 +64,41 @@ pnpm demo                          # API on :4000
 pnpm --filter @genfixs/web dev     # dashboard on :5173 (proxies /api)
 ```
 
+### Production
+
+```bash
+cp /dev/null .env   # fill in from CREDENTIALS.md
+docker compose up --build
+```
+
+Postgres and Redis are included; everything else goes live as you provide
+credentials (see [`CREDENTIALS.md`](CREDENTIALS.md)). The API serves the built
+dashboard on the same port and reports integration readiness at
+`GET /api/status` and in the startup log.
+
+Bare-metal equivalent: set the env vars and `pnpm --filter @genfixs/api start`.
+
+### Connect a suite's CI
+
+After connecting a project in the dashboard (or `POST /api/projects`), add an
+upload step to the suite's CI:
+
+```yaml
+- run: npx playwright test --reporter=json > pw-report.json || true
+- run: node node_modules/@genfixs/ingestion/bin/genfixs-upload.mjs
+    --project "$GENFIXS_PROJECT_ID" --report pw-report.json --commit "$GITHUB_SHA"
+  env:
+    GENFIXS_API_URL: ${{ vars.GENFIXS_API_URL }}
+    GENFIXS_API_TOKEN: ${{ secrets.GENFIXS_API_TOKEN }}
+```
+
+JUnit XML works too (`--format junit-xml`) for non-Playwright CI.
+
 ## Status
 
-v1 / P0 scope (R1–R9) complete on fakes; see
-[`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md) for per-milestone status and what
-remains stubbed (real GitHub App credentials, live model classifier, Postgres/
-Redis smoke validation, real Playwright verification runs).
+v1 / P0 scope (R1–R9) complete and production-wired: 104 tests including live
+integration runs on real Postgres, Redis/BullMQ, and real Chromium
+verification. Real adapters for every external dependency; what's left to go
+fully live is the customer-side credentials listed in
+[`CREDENTIALS.md`](CREDENTIALS.md). See [`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md)
+for per-milestone status.

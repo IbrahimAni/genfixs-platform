@@ -13,5 +13,8 @@
     "@genfixs/domain": "workspace:*",
     "fast-xml-parser": "^4.5.0",
     "zod": "^3.25.0"
+  },
+  "bin": {
+    "genfixs-upload": "./bin/genfixs-upload.mjs"
   }
 }

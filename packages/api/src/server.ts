@@ -1,5 +1,9 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import cors from '@fastify/cors';
+import fastifyStatic from '@fastify/static';
 import { MergePolicySchema, ProjectSchema, quarantineAgeDays } from '@genfixs/domain';
 import Fastify, { type FastifyInstance, type FastifyRequest } from 'fastify';
 import { z } from 'zod';
@@ -47,6 +51,17 @@ export interface ServerOptions {
 export function buildServer(ctx: AppContext, options: ServerOptions = {}): FastifyInstance {
   const app = Fastify({ logger: false });
   void app.register(cors, { origin: true });
+
+  // Serve the built dashboard when present (single-container deployment):
+  // API and UI share one origin, so no proxy is needed.
+  const webDist = join(dirname(fileURLToPath(import.meta.url)), '../../web/dist');
+  if (existsSync(webDist)) {
+    void app.register(fastifyStatic, { root: webDist });
+    app.setNotFoundHandler((req, reply) => {
+      if (req.url.startsWith('/api/')) return reply.code(404).send({ error: 'not found' });
+      return reply.sendFile('index.html');
+    });
+  }
 
   // Keep the raw body around for webhook HMAC verification.
   app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, body, done) => {

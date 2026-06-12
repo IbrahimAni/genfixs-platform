@@ -4,7 +4,7 @@ _Scope: P0 requirements R1–R9 from `GenFixs-product-development-document.md`. 
 
 **Status legend:** `PLANNED` · `IN PROGRESS` · `DONE` · `PARTIAL (notes)`
 
-> **v1 status: all milestones complete.** 94 tests green across 9 packages; the demo seed exercises every classification end-to-end on fakes. Stubbed for production: GitHub App credentials for the REST adapter, a real LLM classifier adapter, live Postgres/Redis smoke validation, real Playwright verification runs against a staging URL.
+> **v1 status: all milestones complete, production-wired.** 104 tests green, including LIVE integration tests on real Postgres, real Redis/BullMQ, real filesystem artifacts, and real Chromium verification runs against the example app. Real adapters exist for every external dependency (Claude classifier/author, GitHub App, S3); each goes live from environment credentials and degrades to a reported local mode otherwise (see CREDENTIALS.md and GET /api/status). Awaiting customer-provided credentials: GitHub App keys, Anthropic API key. Deferred by decision: multi-user auth (D13), webhook artifact fetching (D14).
 
 ---
 
