@@ -1,8 +1,4 @@
-import {
-  makeEvidenceFixture,
-  makeProjectFixture,
-  type Diagnosis,
-} from '@genfixs/domain';
+import { makeEvidenceFixture, makeProjectFixture, type Diagnosis } from '@genfixs/domain';
 import { describe, expect, it } from 'vitest';
 import { assertLocatorOnlyEdit } from './assertionGuard.js';
 import { FixAuthor } from './fixAuthor.js';
@@ -167,9 +163,7 @@ describe('VerificationSandbox (spec §10.7, D3)', () => {
   };
 
   it('passes a heal whose selectors all exist in the live app', async () => {
-    const runner = new ScriptedBrowserRunner(
-      new Set(['coupon-input', 'apply-discount-code']),
-    );
+    const runner = new ScriptedBrowserRunner(new Set(['coupon-input', 'apply-discount-code']));
     const sandbox = new VerificationSandbox(runner);
     const result = await sandbox.verify(project, {
       kind: 'heal',

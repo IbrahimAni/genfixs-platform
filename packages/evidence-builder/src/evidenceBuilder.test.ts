@@ -8,11 +8,7 @@ import {
 import { describe, expect, it } from 'vitest';
 import { EvidenceBuilder } from './evidenceBuilder.js';
 import { computeRunHistoryStats } from './flakeStats.js';
-import {
-  detectSelectorRename,
-  extractSelectors,
-  isPureSelectorDiff,
-} from './selectorAnalysis.js';
+import { detectSelectorRename, extractSelectors, isPureSelectorDiff } from './selectorAnalysis.js';
 
 const TEST_SOURCE = `import { test, expect } from '@playwright/test';
 
@@ -228,8 +224,8 @@ describe('EvidenceBuilder', () => {
   it('refuses to build evidence for non-failed results', async () => {
     const project = makeProject();
     const { builder } = setup(project);
-    await expect(
-      builder.build(project, run, { ...result, status: 'passed' }),
-    ).rejects.toThrow(/only built for failed/);
+    await expect(builder.build(project, run, { ...result, status: 'passed' })).rejects.toThrow(
+      /only built for failed/,
+    );
   });
 });

@@ -9,11 +9,7 @@ import type {
   TestStatus,
 } from '@genfixs/domain';
 import { computeRunHistoryStats } from './flakeStats.js';
-import {
-  extractSelectors,
-  findRelevantAppPaths,
-  serializeSelector,
-} from './selectorAnalysis.js';
+import { extractSelectors, findRelevantAppPaths, serializeSelector } from './selectorAnalysis.js';
 
 export interface EvidenceBuilderDeps {
   github: GitHubClient;
@@ -48,9 +44,7 @@ export class EvidenceBuilder {
     }
 
     const selectors = extractSelectors(testSource);
-    const history = computeRunHistoryStats(
-      await this.deps.getHistory(project.id, result.testId),
-    );
+    const history = computeRunHistoryStats(await this.deps.getHistory(project.id, result.testId));
     const intentArtifacts = await this.deps.getIntentArtifacts(project.id, result.testId);
 
     return {

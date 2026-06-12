@@ -34,10 +34,22 @@ describe('end-to-end pipeline (demo seed)', async () => {
 
     expectClassification('tests/checkout.spec.ts', 'applies discount code', 'BENIGN_DRIFT');
     expectClassification('tests/onboarding.spec.ts', 'completes onboarding', 'BEHAVIOR_CHANGE');
-    expectClassification('tests/pricing.spec.ts', 'calculates total with discount', 'REAL_REGRESSION_SUSPECTED');
+    expectClassification(
+      'tests/pricing.spec.ts',
+      'calculates total with discount',
+      'REAL_REGRESSION_SUSPECTED',
+    );
     expectClassification('tests/export.spec.ts', 'exports report as CSV', 'FEATURE_MISSING');
-    expectClassification('tests/beta-dashboard.spec.ts', 'shows beta dashboard widgets', 'FEATURE_MISSING');
-    expectClassification('tests/search.spec.ts', 'search filters results', 'FLAKY_NONDETERMINISTIC');
+    expectClassification(
+      'tests/beta-dashboard.spec.ts',
+      'shows beta dashboard widgets',
+      'FEATURE_MISSING',
+    );
+    expectClassification(
+      'tests/search.spec.ts',
+      'search filters results',
+      'FLAKY_NONDETERMINISTIC',
+    );
     expectClassification('tests/profile.spec.ts', 'updates profile avatar', 'UNCLASSIFIED');
   });
 

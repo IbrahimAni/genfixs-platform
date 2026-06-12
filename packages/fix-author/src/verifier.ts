@@ -30,10 +30,20 @@ export class VerificationSandbox {
 /** Derives a flow trace from Playwright test source — used by the scripted runner. */
 export function extractFlowTrace(source: string) {
   const steps: BrowserRunResult['flowTrace'] = [];
-  const patterns: Array<{ action: 'goto' | 'click' | 'fill' | 'press' | 'select' | 'expect'; regex: RegExp }> = [
+  const patterns: Array<{
+    action: 'goto' | 'click' | 'fill' | 'press' | 'select' | 'expect';
+    regex: RegExp;
+  }> = [
     { action: 'goto', regex: /\.goto\(\s*['"`]([^'"`]+)['"`]/ },
-    { action: 'click', regex: /(getByTestId\(['"`][^'"`]+['"`]\)|locator\(['"`][^'"`]+['"`]\)|getByRole\([^)]*\))\.click\(/ },
-    { action: 'fill', regex: /(getByTestId\(['"`][^'"`]+['"`]\)|locator\(['"`][^'"`]+['"`]\))\.fill\(/ },
+    {
+      action: 'click',
+      regex:
+        /(getByTestId\(['"`][^'"`]+['"`]\)|locator\(['"`][^'"`]+['"`]\)|getByRole\([^)]*\))\.click\(/,
+    },
+    {
+      action: 'fill',
+      regex: /(getByTestId\(['"`][^'"`]+['"`]\)|locator\(['"`][^'"`]+['"`]\))\.fill\(/,
+    },
     { action: 'expect', regex: /expect\(([^)]*)\)/ },
   ];
   let index = 0;
@@ -41,7 +51,9 @@ export function extractFlowTrace(source: string) {
     for (const { action, regex } of patterns) {
       const match = line.match(regex);
       if (!match) continue;
-      const selectorMatch = line.match(/getByTestId\(\s*['"`]([^'"`]+)['"`]\)|locator\(\s*['"`]([^'"`]+)['"`]\)/);
+      const selectorMatch = line.match(
+        /getByTestId\(\s*['"`]([^'"`]+)['"`]\)|locator\(\s*['"`]([^'"`]+)['"`]\)/,
+      );
       const selector = selectorMatch?.[1]
         ? `[data-testid=${selectorMatch[1]}]`
         : selectorMatch?.[2];
@@ -71,7 +83,9 @@ export class ScriptedBrowserRunner implements BrowserRunner {
   }): Promise<BrowserRunResult> {
     const source = input.files[input.testFile] ?? '';
     const flowTrace = extractFlowTrace(source);
-    const testIds = [...source.matchAll(/getByTestId\(\s*['"`]([^'"`]+)['"`]\)/g)].map((m) => m[1]!);
+    const testIds = [...source.matchAll(/getByTestId\(\s*['"`]([^'"`]+)['"`]\)/g)].map(
+      (m) => m[1]!,
+    );
     const dataTestIds = [...source.matchAll(/\[data-testid=["']?([^"'\]]+)["']?\]/g)].map(
       (m) => m[1]!,
     );

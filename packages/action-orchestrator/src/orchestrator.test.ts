@@ -61,7 +61,12 @@ function setup(options: { verificationPasses?: boolean; healRejected?: string } 
   const prService = {
     openHealPr: vi.fn(async (_p, _d, _f, opts: { autoMerge: boolean }) => ({
       pr: {
-        repo: { provider: 'github' as const, owner: 'acme', name: 'shop-e2e', defaultBranch: 'main' },
+        repo: {
+          provider: 'github' as const,
+          owner: 'acme',
+          name: 'shop-e2e',
+          defaultBranch: 'main',
+        },
         number: 7,
         url: 'https://github.com/acme/shop-e2e/pull/7',
         branch: 'genfixs/heal-test-1',
@@ -70,7 +75,12 @@ function setup(options: { verificationPasses?: boolean; healRejected?: string } 
     })),
     openRewritePr: vi.fn(async () => ({
       pr: {
-        repo: { provider: 'github' as const, owner: 'acme', name: 'shop-e2e', defaultBranch: 'main' },
+        repo: {
+          provider: 'github' as const,
+          owner: 'acme',
+          name: 'shop-e2e',
+          defaultBranch: 'main',
+        },
         number: 8,
         url: 'https://github.com/acme/shop-e2e/pull/8',
         branch: 'genfixs/rewrite-test-1',
@@ -132,12 +142,9 @@ describe('heal path (R3)', () => {
       expect(record.action.autoMerged).toBe(false);
       expect(record.action.pr.number).toBe(7);
     }
-    expect(ctx.prService.openHealPr).toHaveBeenCalledWith(
-      project,
-      expect.anything(),
-      FIX,
-      { autoMerge: false },
-    );
+    expect(ctx.prService.openHealPr).toHaveBeenCalledWith(project, expect.anything(), FIX, {
+      autoMerge: false,
+    });
     // P2 insurance: verification flow trace persisted as TestFlowModel.
     expect(ctx.flowTraces).toHaveLength(1);
     expect(ctx.flowTraces[0]?.steps).toHaveLength(2);

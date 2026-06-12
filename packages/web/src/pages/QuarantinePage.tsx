@@ -1,14 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Card,
-  EmptyState,
-  Mono,
-  PageHeader,
-  Tag,
-  Td,
-  Th,
-} from '../components/ui';
+import { Card, EmptyState, Mono, PageHeader, Tag, Td, Th } from '../components/ui';
 import { api, type QuarantineRow } from '../lib/api';
 
 const REASON_LABEL: Record<string, string> = {
@@ -60,7 +52,9 @@ export function QuarantinePage({ projectId }: { projectId: string }) {
                   <Td>
                     <Link to={`/diagnoses/${q.diagnosisId}`} className="group block">
                       <span className="text-sm leading-6 text-ink-700 group-hover:text-accent">
-                        {q.hypothesis.length > 160 ? `${q.hypothesis.slice(0, 160)}…` : q.hypothesis}
+                        {q.hypothesis.length > 160
+                          ? `${q.hypothesis.slice(0, 160)}…`
+                          : q.hypothesis}
                       </span>
                     </Link>
                     {q.removalRecommendation && (
@@ -69,7 +63,9 @@ export function QuarantinePage({ projectId }: { projectId: string }) {
                         explicit sign-off. {q.removalRecommendation.rationale}
                       </div>
                     )}
-                    <Mono className="mt-1 block text-[11px] text-ink-400">test {q.testId.slice(0, 12)}</Mono>
+                    <Mono className="mt-1 block text-[11px] text-ink-400">
+                      test {q.testId.slice(0, 12)}
+                    </Mono>
                   </Td>
                   <Td className="tabular-nums text-ink-700">{q.ageDays}d</Td>
                   <Td>

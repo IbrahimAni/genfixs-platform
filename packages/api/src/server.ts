@@ -1,8 +1,5 @@
 import cors from '@fastify/cors';
-import {
-  MergePolicySchema,
-  quarantineAgeDays,
-} from '@genfixs/domain';
+import { MergePolicySchema, quarantineAgeDays } from '@genfixs/domain';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { createAppContext, type AppContext } from './context.js';
@@ -88,11 +85,13 @@ export function buildServer(ctx: AppContext): FastifyInstance {
     const diagnosis = await ctx.repos.diagnoses.get(id);
     if (!diagnosis) return reply.code(404).send({ error: 'unknown diagnosis' });
     const record = await ctx.repos.actions.getByDiagnosis(id);
-    const flowTraces = await ctx.repos.flowTraces.listByTest(
-      diagnosis.projectId,
-      diagnosis.testId,
-    );
-    return { diagnosis, action: record?.action ?? null, decidedAt: record?.decidedAt ?? null, flowTraces };
+    const flowTraces = await ctx.repos.flowTraces.listByTest(diagnosis.projectId, diagnosis.testId);
+    return {
+      diagnosis,
+      action: record?.action ?? null,
+      decidedAt: record?.decidedAt ?? null,
+      flowTraces,
+    };
   });
 
   app.get('/api/projects/:id/quarantine', async (req, reply) => {

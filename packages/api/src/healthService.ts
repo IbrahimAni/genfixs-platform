@@ -1,8 +1,4 @@
-import {
-  CLASSIFICATIONS,
-  type Classification,
-  type SuiteHealthSnapshot,
-} from '@genfixs/domain';
+import { CLASSIFICATIONS, type Classification, type SuiteHealthSnapshot } from '@genfixs/domain';
 import type { Repositories } from './repositories/interfaces.js';
 
 export interface RunTrendPoint {
@@ -40,16 +36,15 @@ export class HealthService {
       this.repos.runs.listByProject(projectId),
     ]);
 
-    const breaksByClassification = Object.fromEntries(
-      CLASSIFICATIONS.map((c) => [c, 0]),
-    ) as Record<Classification, number>;
+    const breaksByClassification = Object.fromEntries(CLASSIFICATIONS.map((c) => [c, 0])) as Record<
+      Classification,
+      number
+    >;
     for (const d of diagnoses) breaksByClassification[d.classification]++;
 
     const totalBreaks = diagnoses.length;
     const autoHealed = actions.filter((a) => a.action.kind === 'HEAL').length;
-    const regressionsCaught = actions.filter(
-      (a) => a.action.kind === 'REPORT_REGRESSION',
-    ).length;
+    const regressionsCaught = actions.filter((a) => a.action.kind === 'REPORT_REGRESSION').length;
 
     // Mean time-to-green: average gap between a failing run and the next run
     // where the suite (minus quarantined tests) passes.

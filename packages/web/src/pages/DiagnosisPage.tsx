@@ -1,13 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import {
-  Card,
-  ClassificationBadge,
-  Mono,
-  PageHeader,
-  SectionTitle,
-  Tag,
-} from '../components/ui';
+import { Card, ClassificationBadge, Mono, PageHeader, SectionTitle, Tag } from '../components/ui';
 import { api, type DiagnosisDetail } from '../lib/api';
 
 function DiffView({ patch }: { patch: string }) {
@@ -17,11 +10,7 @@ function DiffView({ patch }: { patch: string }) {
         <div
           key={i}
           className={
-            line.startsWith('+')
-              ? 'text-ok'
-              : line.startsWith('-')
-                ? 'text-bad'
-                : 'text-ink-500'
+            line.startsWith('+') ? 'text-ok' : line.startsWith('-') ? 'text-bad' : 'text-ink-500'
           }
         >
           {line}
@@ -71,7 +60,9 @@ export function DiagnosisPage() {
           {diagnosis.suggestedSelectorFix && (
             <p className="mt-2 text-sm text-ink-700">
               Selector fix:{' '}
-              <Mono className="text-bad line-through">{diagnosis.suggestedSelectorFix.oldSelector}</Mono>{' '}
+              <Mono className="text-bad line-through">
+                {diagnosis.suggestedSelectorFix.oldSelector}
+              </Mono>{' '}
               → <Mono className="text-ok">{diagnosis.suggestedSelectorFix.newSelector}</Mono>
             </p>
           )}
@@ -82,9 +73,16 @@ export function DiagnosisPage() {
           {!action && <p className="text-sm text-ink-500">Pending.</p>}
           {action && (
             <div className="text-sm leading-6 text-ink-700">
-              <div className="mb-1 font-medium text-ink-900">{action.kind.replaceAll('_', ' ')}</div>
+              <div className="mb-1 font-medium text-ink-900">
+                {action.kind.replaceAll('_', ' ')}
+              </div>
               {action.pr && (
-                <a className="text-accent hover:underline" href={action.pr.url} target="_blank" rel="noreferrer">
+                <a
+                  className="text-accent hover:underline"
+                  href={action.pr.url}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   Pull request #{action.pr.number}
                 </a>
               )}

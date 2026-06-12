@@ -141,7 +141,12 @@ export function findRelevantAppPaths(
   const relevant: string[] = [];
   const lowerSource = testSource.toLowerCase();
   for (const file of diff.files) {
-    const baseName = file.path.split('/').pop()?.replace(/\.\w+$/, '')?.toLowerCase() ?? '';
+    const baseName =
+      file.path
+        .split('/')
+        .pop()
+        ?.replace(/\.\w+$/, '')
+        ?.toLowerCase() ?? '';
     const patchMentionsSelector = selectors.some((s) => file.patch?.includes(s.value));
     const sourceMentionsFile = baseName.length > 2 && lowerSource.includes(baseName);
     if (patchMentionsSelector || sourceMentionsFile) relevant.push(file.path);

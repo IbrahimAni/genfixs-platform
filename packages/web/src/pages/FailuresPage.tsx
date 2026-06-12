@@ -31,7 +31,12 @@ function ActionCell({ failure }: { failure: FailureRow }) {
         <span className="flex items-center gap-2">
           <Tag tone="ok">healed</Tag>
           {a.pr && (
-            <a className="text-accent hover:underline" href={a.pr.url} target="_blank" rel="noreferrer">
+            <a
+              className="text-accent hover:underline"
+              href={a.pr.url}
+              target="_blank"
+              rel="noreferrer"
+            >
               PR #{a.pr.number}
             </a>
           )}
@@ -43,7 +48,12 @@ function ActionCell({ failure }: { failure: FailureRow }) {
         <span className="flex items-center gap-2">
           <Tag tone="warn">rewrite proposed</Tag>
           {a.pr && (
-            <a className="text-accent hover:underline" href={a.pr.url} target="_blank" rel="noreferrer">
+            <a
+              className="text-accent hover:underline"
+              href={a.pr.url}
+              target="_blank"
+              rel="noreferrer"
+            >
               PR #{a.pr.number}
             </a>
           )}

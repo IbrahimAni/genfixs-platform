@@ -69,12 +69,9 @@ describe('heal PRs (R3)', () => {
 
   it('enables auto-merge only when requested AND the project opted in', async () => {
     const { github, service } = setup();
-    const { autoMerged } = await service.openHealPr(
-      projectAutoMerge,
-      makeDiagnosis(),
-      HEAL_FIX,
-      { autoMerge: true },
-    );
+    const { autoMerged } = await service.openHealPr(projectAutoMerge, makeDiagnosis(), HEAL_FIX, {
+      autoMerge: true,
+    });
     expect(autoMerged).toBe(true);
     expect(github.pullRequests[0]!.autoMergeEnabled).toBe(true);
   });
@@ -113,9 +110,14 @@ describe('heal PRs (R3)', () => {
   it('rejects a rewrite fix smuggled through the heal path', async () => {
     const { service } = setup();
     await expect(
-      service.openHealPr(project, makeDiagnosis(), { ...HEAL_FIX, kind: 'rewrite' }, {
-        autoMerge: false,
-      }),
+      service.openHealPr(
+        project,
+        makeDiagnosis(),
+        { ...HEAL_FIX, kind: 'rewrite' },
+        {
+          autoMerge: false,
+        },
+      ),
     ).rejects.toThrow(PolicyViolationError);
   });
 });

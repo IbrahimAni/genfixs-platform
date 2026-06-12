@@ -119,9 +119,14 @@ export class ActionOrchestrator {
       );
     }
 
-    const { pr, autoMerged } = await this.deps.prService.openHealPr(project, diagnosis, authored.fix, {
-      autoMerge: autoMergeEligible,
-    });
+    const { pr, autoMerged } = await this.deps.prService.openHealPr(
+      project,
+      diagnosis,
+      authored.fix,
+      {
+        autoMerge: autoMergeEligible,
+      },
+    );
     return this.record(project, diagnosis, { kind: 'HEAL', pr, autoMerged });
   }
 

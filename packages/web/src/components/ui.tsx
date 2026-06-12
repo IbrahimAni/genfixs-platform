@@ -44,7 +44,13 @@ export function ClassificationBadge({ value }: { value: Classification }) {
   );
 }
 
-export function Tag({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neutral' | 'accent' | 'ok' | 'warn' | 'bad' }) {
+export function Tag({
+  children,
+  tone = 'neutral',
+}: {
+  children: ReactNode;
+  tone?: 'neutral' | 'accent' | 'ok' | 'warn' | 'bad';
+}) {
   const tones = {
     neutral: 'bg-ink-100 text-ink-700',
     accent: 'bg-accent-soft text-accent',
@@ -53,17 +59,33 @@ export function Tag({ children, tone = 'neutral' }: { children: ReactNode; tone?
     bad: 'bg-bad-soft text-bad',
   };
   return (
-    <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium whitespace-nowrap ${tones[tone]}`}>
+    <span
+      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium whitespace-nowrap ${tones[tone]}`}
+    >
       {children}
     </span>
   );
 }
 
-export function Stat({ label, value, hint, tone }: { label: string; value: string; hint?: string; tone?: 'ok' | 'bad' }) {
+export function Stat({
+  label,
+  value,
+  hint,
+  tone,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  tone?: 'ok' | 'bad';
+}) {
   return (
     <Card className="px-5 py-4">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-500">{label}</div>
-      <div className={`mt-1.5 text-2xl font-semibold tabular-nums tracking-tight ${tone === 'bad' ? 'text-bad' : tone === 'ok' ? 'text-ok' : 'text-ink-900'}`}>
+      <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-500">
+        {label}
+      </div>
+      <div
+        className={`mt-1.5 text-2xl font-semibold tabular-nums tracking-tight ${tone === 'bad' ? 'text-bad' : tone === 'ok' ? 'text-ok' : 'text-ink-900'}`}
+      >
         {value}
       </div>
       {hint && <div className="mt-0.5 text-xs text-ink-400">{hint}</div>}
@@ -90,7 +112,11 @@ export function Th({ children, className = '' }: { children?: ReactNode; classNa
 }
 
 export function Td({ children, className = '' }: { children?: ReactNode; className?: string }) {
-  return <td className={`border-b border-ink-100 px-4 py-3 align-top text-sm ${className}`}>{children}</td>;
+  return (
+    <td className={`border-b border-ink-100 px-4 py-3 align-top text-sm ${className}`}>
+      {children}
+    </td>
+  );
 }
 
 export function Mono({ children, className = '' }: { children: ReactNode; className?: string }) {

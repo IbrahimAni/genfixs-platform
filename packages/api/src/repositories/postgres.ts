@@ -21,9 +21,9 @@ import type { Repositories } from './interfaces.js';
  * domain Zod schemas on the way out, so a corrupt row fails loudly instead of
  * leaking malformed state into the pipeline.
  */
-export async function createPostgresRepositories(connectionString: string): Promise<
-  Repositories & { close(): Promise<void> }
-> {
+export async function createPostgresRepositories(
+  connectionString: string,
+): Promise<Repositories & { close(): Promise<void> }> {
   const pool = new pg.Pool({ connectionString });
   const migration = await readFile(
     join(dirname(fileURLToPath(import.meta.url)), '../../migrations/001_init.sql'),
@@ -113,7 +113,16 @@ export async function createPostgresRepositories(connectionString: string): Prom
         await q(
           `INSERT INTO diagnoses (id, project_id, test_id, run_id, classification, confidence, created_at, doc)
            VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO UPDATE SET doc=$8, classification=$5, confidence=$6`,
-          [d.id, d.projectId, d.testId, d.runId, d.classification, d.confidence, d.createdAt, JSON.stringify(d)],
+          [
+            d.id,
+            d.projectId,
+            d.testId,
+            d.runId,
+            d.classification,
+            d.confidence,
+            d.createdAt,
+            JSON.stringify(d),
+          ],
         );
       },
       async get(id) {
@@ -136,7 +145,15 @@ export async function createPostgresRepositories(connectionString: string): Prom
         await q(
           `INSERT INTO action_records (id, project_id, diagnosis_id, test_id, kind, decided_at, doc)
            VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (id) DO NOTHING`,
-          [a.id, a.projectId, a.diagnosisId, a.testId, a.action.kind, a.decidedAt, JSON.stringify(a)],
+          [
+            a.id,
+            a.projectId,
+            a.diagnosisId,
+            a.testId,
+            a.action.kind,
+            a.decidedAt,
+            JSON.stringify(a),
+          ],
         );
       },
       async listByProject(projectId) {
@@ -158,7 +175,14 @@ export async function createPostgresRepositories(connectionString: string): Prom
         await q(
           `INSERT INTO quarantine_records (id, project_id, test_id, status, quarantined_at, doc)
            VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (id) DO UPDATE SET status=$4, doc=$6`,
-          [record.id, record.projectId, record.testId, record.status, record.quarantinedAt, JSON.stringify(record)],
+          [
+            record.id,
+            record.projectId,
+            record.testId,
+            record.status,
+            record.quarantinedAt,
+            JSON.stringify(record),
+          ],
         );
       },
       async get(id) {

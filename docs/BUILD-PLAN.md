@@ -1,8 +1,10 @@
 # GenFixs v1 Build Plan
 
-*Scope: P0 requirements R1–R9 from `GenFixs-product-development-document.md`. P1/P2 features are out of scope; P2 architectural insurance (persist `TestFlowModel` flow traces, graph-ready entities) is honored from day one.*
+_Scope: P0 requirements R1–R9 from `GenFixs-product-development-document.md`. P1/P2 features are out of scope; P2 architectural insurance (persist `TestFlowModel` flow traces, graph-ready entities) is honored from day one._
 
 **Status legend:** `PLANNED` · `IN PROGRESS` · `DONE` · `PARTIAL (notes)`
+
+> **v1 status: all milestones complete.** 94 tests green across 9 packages; the demo seed exercises every classification end-to-end on fakes. Stubbed for production: GitHub App credentials for the REST adapter, a real LLM classifier adapter, live Postgres/Redis smoke validation, real Playwright verification runs against a staging URL.
 
 ---
 
@@ -30,11 +32,13 @@ These are enforced in the **action-orchestrator** (deterministic policy) and ass
 ## Milestones
 
 ### M0 — Repo scaffold `DONE`
+
 Monorepo bootstrap: pnpm workspaces, turborepo, shared tsconfig/eslint/prettier, vitest, CI-ready scripts (`build`, `test`, `lint`, `typecheck`). Empty package shells. `docs/DECISIONS.md` started.
 
 **Exit:** `pnpm build && pnpm test` green across all packages.
 
 ### M1 — `domain` package (spec §9) `DONE`
+
 The shared vocabulary every service consumes. No service code before this.
 
 - Types/entities: `Classification` enum, `Project`, `MergePolicy`, `TestRun`, `TestResult`, `FailureEvidence`, `Diagnosis`, `EvidenceBundle`, `AgentAction`, `IntentArtifact`, `SuiteHealthSnapshot`, `ArtifactRef`, `RepoRef`, `OrgRef`, audit-log event types.
@@ -45,6 +49,7 @@ The shared vocabulary every service consumes. No service code before this.
 **Exit:** typed, validated, unit-tested; all later packages import only from here.
 
 ### M2 — `ingestion` (R1) `DONE`
+
 - Playwright JSON report parser (first-class), JUnit XML parser (fallback) → normalized `TestRun`/`TestResult`/`FailureEvidence`.
 - Report upload endpoint + webhook receiver shape (stateless, queue-backed); artifacts (traces, screenshots, DOM snapshots) persisted to the object store with lifecycle metadata.
 - Emits `run.ingested`.
@@ -52,6 +57,7 @@ The shared vocabulary every service consumes. No service code before this.
 **Exit:** real Playwright report fixtures (passing, failing, mixed, with attachments) round-trip into normalized entities; JUnit fallback covered.
 
 ### M3 — `evidence-builder` `DONE`
+
 - Assembles `EvidenceBundle`: app-repo diff last-green → failing commit (via `GitHubClient`, optional — absence degrades gracefully), run-history flake statistics per testId, linked intent artifacts, failure artifacts.
 - Pure-selector-diff detector (is the test-relevant diff exclusively locator/attribute changes?) — feeds the deterministic pre-filter.
 - Emits `evidence.ready`.
@@ -59,6 +65,7 @@ The shared vocabulary every service consumes. No service code before this.
 **Exit:** bundles built with and without app-repo connection; flake stats correct on seeded run history.
 
 ### M4 — `diagnosis-engine` (R2) `DONE`
+
 - **Stage 1, deterministic pre-filters (no LLM):** flake-statistics filter (intermittent pass/fail history + timing/network error signatures → `FLAKY_NONDETERMINISTIC`); pure-selector-drift filter (selector-only app diff + locator-not-found error → `BENIGN_DRIFT` high confidence).
 - **Stage 2, LLM classification** for the ambiguous remainder, behind `LlmClassifier` interface (deterministic rule-based fake for tests/demo; real Claude adapter swappable). Output constrained to the §8 table vocabulary: classification + confidence + rationale.
 - Confidence thresholds come from project policy; **below threshold → `UNCLASSIFIED`**, always.
@@ -67,6 +74,7 @@ The shared vocabulary every service consumes. No service code before this.
 **Exit (critical acceptance, R2):** app-logic break with untouched locators → `REAL_REGRESSION_SUSPECTED`, never `BENIGN_DRIFT`; renamed testid with cosmetic diff → `BENIGN_DRIFT` high confidence; low confidence → `UNCLASSIFIED`. Pre-filters never invoke the LLM stub when they match.
 
 ### M5 — `action-orchestrator` (the trust core; spec §8) `DONE`
+
 - The §8 decision table as a pure deterministic policy function; exhaustive unit tests over **every classification × policy permutation × confidence band** — the most important tests in the codebase.
 - Explicit refusal tests: regression never healed; deletion never auto-merged; `BEHAVIOR_CHANGE` never auto-merge-eligible; `UNCLASSIFIED`/`FLAKY` → quarantine with hypothesis; bias rule (conflicting signals → less destructive action).
 - Auto-merge eligibility: only `BENIGN_DRIFT` + per-repo opt-in (off by default) + verified green.
@@ -76,6 +84,7 @@ The shared vocabulary every service consumes. No service code before this.
 **Exit:** exhaustive policy test suite green; mutation-style negative tests prove the forbidden transitions are unrepresentable.
 
 ### M6 — `fix-author` + verification sandbox (R3, R4, R8) `DONE`
+
 - Heal author for `BENIGN_DRIFT`: minimal locator/selector-level edit, **assertions untouched** (enforced by a post-edit AST/diff guard that rejects any heal touching assertions or flow logic).
 - Rewrite author for `BEHAVIOR_CHANGE`: drafts updated test + diff-level evidence summary + "is this intended?" framing.
 - Style matching (R8): respect repo prettier/eslint configs, locator-strategy detection, run lint/format on output.
@@ -84,6 +93,7 @@ The shared vocabulary every service consumes. No service code before this.
 **Exit:** heal fixture verifies green and produces a locator-only diff; a heal attempt that would touch an assertion is rejected by the guard with a test proving it; failed verification provably never reaches pr-service.
 
 ### M7 — `pr-service` (R3, R4, R5) `DONE`
+
 - `GitHubClient` interface (least-privilege GitHub App shape) + full in-memory fake; real Octokit adapter stubbed for later credentials.
 - Structured PR bodies: classification, evidence, what drifted/changed, why it's safe / "is this intended?". Branch-protection honored.
 - Auto-merge call allowed **only** when the orchestrator's decided action carries auto-merge eligibility (re-checked here — defense in depth).
@@ -92,6 +102,7 @@ The shared vocabulary every service consumes. No service code before this.
 **Exit:** PRs/issues created against the fake with correct bodies and merge gates; double-enforcement test that pr-service refuses auto-merge for anything but eligible `BENIGN_DRIFT`.
 
 ### M8 — `api` + persistence + pipeline wiring `DONE` (Postgres + BullMQ adapters written, untested against live services; in-memory is the tested default)
+
 - Postgres schema (projects, runs, results, diagnoses, actions, quarantine, flow traces, audit log, health snapshots) behind a repository layer with an in-memory fake; migrations included.
 - BullMQ queue wiring of M2–M7 into the event-driven pipeline; in-memory queue fake for tests.
 - REST API for the dashboard: projects, suite health (R9 metrics: pass/fail trend, breaks by classification, auto-heal rate, regressions caught, quarantine backlog, mean time-to-green), failures inbox, diagnosis detail, quarantine list, settings (merge policy, thresholds, repo connection).
@@ -99,9 +110,11 @@ The shared vocabulary every service consumes. No service code before this.
 **Exit:** end-to-end integration test — ingest fixture report → diagnosis → action → PR/issue/quarantine → visible via API, entirely on fakes.
 
 ### M9 — `web` dashboard (R9) `DONE`
+
 React + Vite + Tailwind with a small design-token layer (near-monochrome: off-white ground, single gray scale, one restrained accent; muted green/amber/red only on test states and classifications; Inter; no gradients or decoration). shadcn/ui as a quiet base.
 
 Screens:
+
 1. **Project overview** — suite-health snapshot, pass/fail trend, R9 metrics, calm tables/sparklines.
 2. **Failures inbox** — grouped by classification.
 3. **Diagnosis detail** — evidence bundle, confidence, decided action, PR/issue link.
@@ -110,7 +123,8 @@ Screens:
 
 **Exit:** all five screens live against the API; lint/typecheck/test green.
 
-### M10 — Demo mode + hardening `PLANNED`
+### M10 — Demo mode + hardening `DONE`
+
 - Seed script: fake project + sample runs producing at least one of **every** classification (including the false-green trap refused and the flag-hidden feature quarantined as cannot-locate, per the experiment plan), so the dashboard is reviewable immediately.
 - Full-suite pass, `docs/DECISIONS.md` finalized, README with run instructions, BUILD-PLAN statuses updated.
 
@@ -119,4 +133,5 @@ Screens:
 ---
 
 ## Explicitly deferred (hard boundaries per spec §3)
+
 Test generation (R10), Cypress (R11), GitLab (R12), Slack/Jira integrations (R13), intent-aware healing (R14), feature graph/observatory/multi-role (R15–R18), running customer suites on our compute, fixing app-level flakiness.

@@ -1,13 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TrendChart } from '../components/TrendChart';
-import {
-  Card,
-  ClassificationBadge,
-  PageHeader,
-  SectionTitle,
-  Stat,
-} from '../components/ui';
+import { Card, ClassificationBadge, PageHeader, SectionTitle, Stat } from '../components/ui';
 import { api, type Classification, type ProjectDetail } from '../lib/api';
 
 const CLASSIFICATION_ORDER: Classification[] = [

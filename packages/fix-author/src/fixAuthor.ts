@@ -98,7 +98,9 @@ export function summarizeAppChange(diagnosis: Diagnosis): string {
   const diff = diagnosis.evidence.appDiff;
   if (!diff) return 'No app diff available.';
   const fileLines = diff.files
-    .map((f) => `- \`${f.path}\` (${f.status})${f.patch ? `\n\n\`\`\`diff\n${f.patch}\n\`\`\`` : ''}`)
+    .map(
+      (f) => `- \`${f.path}\` (${f.status})${f.patch ? `\n\n\`\`\`diff\n${f.patch}\n\`\`\`` : ''}`,
+    )
     .join('\n');
   return `App change between \`${diff.baseSha}\` and \`${diff.headSha}\`:\n\n${fileLines}`;
 }

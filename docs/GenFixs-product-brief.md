@@ -1,6 +1,6 @@
 # GenFixs: Product Brief
 
-*A living document. Version 0.1, first draft from the founding brainstorm.*
+_A living document. Version 0.1, first draft from the founding brainstorm._
 
 GenFixs keeps a software team's automated test suite green, honest, and trustworthy without anyone having to babysit it, so teams never ship a bug hidden behind a passing test.
 

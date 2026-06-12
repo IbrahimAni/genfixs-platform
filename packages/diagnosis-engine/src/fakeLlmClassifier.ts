@@ -1,7 +1,8 @@
 import type { EvidenceBundle, LlmClassificationResult, LlmClassifier } from '@genfixs/domain';
 import { detectSelectorRename, extractSelectors, splitPatch } from '@genfixs/evidence-builder';
 
-const ASSERTION_ERROR = /expect.*(received|to(Have|Be|Equal|Contain))|expected .* to (equal|be|contain)/i;
+const ASSERTION_ERROR =
+  /expect.*(received|to(Have|Be|Equal|Contain))|expected .* to (equal|be|contain)/i;
 const LOCATOR_ERROR = /locator.*not found|waiting for.*locator|element.*not.*(found|visible)/i;
 const FLAG_PATTERN = /feature.?flag|flags?\.|isEnabled|FEATURE_/i;
 const LOGIC_PATTERN = /[-+*/]=|return .*[*+\-/]|if\s*\(|=>.*[*+\-/]|Math\./;
@@ -22,7 +23,8 @@ export class FakeLlmClassifier implements LlmClassifier {
       return {
         classification: 'UNCLASSIFIED',
         confidence: 0.3,
-        rationale: 'No app diff available and no deterministic signal; cannot attribute the failure.',
+        rationale:
+          'No app diff available and no deterministic signal; cannot attribute the failure.',
       };
     }
 

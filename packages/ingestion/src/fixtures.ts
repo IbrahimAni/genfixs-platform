@@ -28,7 +28,8 @@ export function makePlaywrightReport(specs: FixtureSpec[]): string {
       file,
       tests: [
         {
-          status: s.status === 'passed' ? 'expected' : s.status === 'failed' ? 'unexpected' : 'skipped',
+          status:
+            s.status === 'passed' ? 'expected' : s.status === 'failed' ? 'unexpected' : 'skipped',
           results:
             s.status === 'skipped'
               ? []

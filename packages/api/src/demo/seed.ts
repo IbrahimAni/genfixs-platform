@@ -145,8 +145,7 @@ const CASES: DemoCase[] = [
     key: 'onboarding',
     commit: 'c2flow000',
     green: 'g2green00',
-    errorMessage:
-      "expect(locator).toHaveText: expected 'Step 2 of 2' received 'Step 2 of 4'",
+    errorMessage: "expect(locator).toHaveText: expected 'Step 2 of 2' received 'Step 2 of 4'",
     diffFiles: [
       {
         path: 'src/components/Onboarding.tsx',
@@ -219,7 +218,10 @@ const CASES: DemoCase[] = [
   },
 ];
 
-function reportFor(failing: CaseKey | null, statusOf: (key: CaseKey) => FixtureSpec['status']): string {
+function reportFor(
+  failing: CaseKey | null,
+  statusOf: (key: CaseKey) => FixtureSpec['status'],
+): string {
   const specs: FixtureSpec[] = (Object.keys(FILES) as CaseKey[]).map((key) => {
     const c = CASES.find((x) => x.key === key);
     return {
@@ -326,9 +328,7 @@ export async function seedDemo(): Promise<DemoContext> {
       commitSha: c.commit,
       ...(c.green ? { lastGreenSha: c.green } : {}),
       format: 'playwright-json',
-      raw: reportFor(c.key, (key) =>
-        quarantined.has(key) ? 'skipped' : 'passed',
-      ),
+      raw: reportFor(c.key, (key) => (quarantined.has(key) ? 'skipped' : 'passed')),
       startedAt: new Date(runStart.getTime() + i * 86_400_000),
     });
     await ctx.queue.drain();

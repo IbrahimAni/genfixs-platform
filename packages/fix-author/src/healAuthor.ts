@@ -24,7 +24,9 @@ export function applySelectorHeal(
   rename: SelectorRename,
 ): HealEdit | { rejected: string } {
   if (!rename.oldSelector || !rename.newSelector || rename.oldSelector === rename.newSelector) {
-    return { rejected: `Invalid selector rename: "${rename.oldSelector}" → "${rename.newSelector}"` };
+    return {
+      rejected: `Invalid selector rename: "${rename.oldSelector}" → "${rename.newSelector}"`,
+    };
   }
   const old = escapeRegex(rename.oldSelector);
   const patterns = [

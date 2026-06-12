@@ -21,9 +21,7 @@ export const DiagnosisSchema = z.object({
   /** When the original classification was degraded to UNCLASSIFIED, what it was. */
   degradedFrom: ClassificationSchema.optional(),
   /** For BENIGN_DRIFT: the drifted selector and its detected replacement, when known. */
-  suggestedSelectorFix: z
-    .object({ oldSelector: z.string(), newSelector: z.string() })
-    .optional(),
+  suggestedSelectorFix: z.object({ oldSelector: z.string(), newSelector: z.string() }).optional(),
   /** Filled after execution; spec §9 `decidedAction`. */
   decidedAction: AgentActionSchema.optional(),
   createdAt: z.coerce.date(),

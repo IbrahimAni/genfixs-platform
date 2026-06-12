@@ -1,6 +1,6 @@
 # GenFixs: Product Development Document
 
-*Version 1.0. Consolidates the founding brainstorm, the product brief, the validation experiment, and the competitive positioning into a single document a team can build from.*
+_Version 1.0. Consolidates the founding brainstorm, the product brief, the validation experiment, and the competitive positioning into a single document a team can build from._
 
 **One-liner:** GenFixs is an autonomous test-maintenance engineer. It keeps a team's existing automated test suite green, honest, and trustworthy, working inside their own repo and CI, so that a passing suite actually means the product works.
 
@@ -68,10 +68,12 @@ Ordered by priority.
 ### P0: Must-have (v1 cannot ship without these)
 
 **R1. CI and repo integration**
+
 - Connect to GitHub (first), consuming test run results (Playwright report ingestion first; JUnit XML as a general fallback) and reading/writing the test repo via a GitHub App with least-privilege scopes.
 - Acceptance: Given a connected repo and CI, when a test run completes with failures, then GenFixs ingests the full report (traces, errors, DOM snapshots where available) within minutes and begins diagnosis.
 
 **R2. Failure classification engine (the heart of the product)**
+
 - Every failing test is classified into exactly one of: `BENIGN_DRIFT`, `BEHAVIOR_CHANGE`, `REAL_REGRESSION_SUSPECTED`, `FEATURE_MISSING`, `FLAKY_NONDETERMINISTIC`, `UNCLASSIFIED`.
 - Inputs: the failing test code, the failure artifacts (error, trace, screenshots, DOM snapshot), the app diff between last-green and current commit (when the app repo is connected), run history for flake statistics, and intent artifacts when available.
 - Each classification carries a confidence score. Below threshold, the result degrades to `UNCLASSIFIED`.
@@ -79,30 +81,37 @@ Ordered by priority.
 - Acceptance: Given a renamed testid with unchanged behavior, when the test fails, then classification is `BENIGN_DRIFT` with high confidence.
 
 **R3. Auto-heal for benign drift**
+
 - For `BENIGN_DRIFT`: author the minimal fix, verify it locally (run the healed test against the current app build), and open a PR that is already green. Auto-merge is configurable per repo and off by default until the customer enables it.
 - Acceptance: Given a `BENIGN_DRIFT` classification, when the heal is authored, then the PR contains only locator/selector-level changes, assertions are untouched, the PR body explains what drifted, and CI passes before the PR is surfaced.
 
 **R4. Proposed fixes for behavior changes**
+
 - For `BEHAVIOR_CHANGE`: author the updated test matching the new flow, attach evidence of the app change, and open a PR explicitly requiring human confirmation that the new behavior is intended. Never auto-merge.
 - Acceptance: Given a flow extended from two steps to four, when GenFixs processes the failure, then the PR contains the rewritten test, a diff-level summary of the app change, and the question "is this intended?", and the PR cannot merge without human approval.
 
 **R5. Regression reporting**
+
 - For `REAL_REGRESSION_SUSPECTED`: produce a report containing the failing assertion, the suspect app change, reproduction steps, and severity hints. Deliver to the configured channel (GitHub issue first; Slack/Jira as P1 integrations).
 - Acceptance: the test remains red and untouched until the regression is resolved or a human reclassifies.
 
 **R6. Quarantine and escalation**
+
 - For `FLAKY_NONDETERMINISTIC` and `UNCLASSIFIED`: quarantine (skip-with-annotation, never delete), and escalate with a root-cause hypothesis (timing, network, shared state, ambiguous diff).
 - Acceptance: quarantined tests are visibly tracked with age and reason; the quarantine list is part of suite-health reporting.
 
 **R7. Feature-missing handling**
+
 - For `FEATURE_MISSING`: distinguish "cannot locate" from "truly removed" using available evidence (app diff, feature flags). Recommend quarantine; deletion is a human-only action behind explicit sign-off.
 - Acceptance: Given a feature hidden behind a flag, when its tests fail, then GenFixs quarantines as cannot-locate and does not propose deletion.
 
 **R8. Style-matched authorship**
+
 - Authored code follows the repo's existing conventions: locator strategy, helper usage, naming, fixtures, formatting (respect lint/prettier configs).
 - Acceptance: PRs pass the repo's existing lint/format CI without manual cleanup.
 
 **R9. Suite-health dashboard (minimal)**
+
 - Per project: pass/fail trend, breaks by classification, auto-heal rate, regressions caught, quarantine backlog, mean time-to-green.
 - This is the seed of the later "observatory," scoped to maintenance signals only.
 
@@ -123,14 +132,14 @@ Ordered by priority.
 
 ## 8. The classification policy (decision table)
 
-| Classification | Evidence pattern | Action | Merge policy | Human time |
-|---|---|---|---|---|
-| BENIGN_DRIFT | Selector/DOM drift, intent preserved, app diff cosmetic | Author heal, verify green, open PR | Auto-merge eligible (opt-in) | Zero |
-| BEHAVIOR_CHANGE | Flow/assertion no longer matches app, diff shows intentional-looking change | Author rewritten test + evidence | Human approval required | ~30s review |
-| REAL_REGRESSION_SUSPECTED | Test logic sound, app output wrong vs. expectation/intent | Report bug, do not touch test | N/A (no PR) | Engineer fixes app |
-| FEATURE_MISSING | Target unreachable; diff suggests removal or gating | Quarantine; recommend removal only with strong evidence | Deletion: human sign-off only, never auto | Review |
-| FLAKY_NONDETERMINISTIC | Intermittent across history; timing/network signatures | Quarantine + root-cause hypothesis | N/A | Triage when ready |
-| UNCLASSIFIED | Confidence below threshold | Quarantine + escalate | N/A | Review |
+| Classification            | Evidence pattern                                                            | Action                                                  | Merge policy                              | Human time         |
+| ------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------- | ------------------ |
+| BENIGN_DRIFT              | Selector/DOM drift, intent preserved, app diff cosmetic                     | Author heal, verify green, open PR                      | Auto-merge eligible (opt-in)              | Zero               |
+| BEHAVIOR_CHANGE           | Flow/assertion no longer matches app, diff shows intentional-looking change | Author rewritten test + evidence                        | Human approval required                   | ~30s review        |
+| REAL_REGRESSION_SUSPECTED | Test logic sound, app output wrong vs. expectation/intent                   | Report bug, do not touch test                           | N/A (no PR)                               | Engineer fixes app |
+| FEATURE_MISSING           | Target unreachable; diff suggests removal or gating                         | Quarantine; recommend removal only with strong evidence | Deletion: human sign-off only, never auto | Review             |
+| FLAKY_NONDETERMINISTIC    | Intermittent across history; timing/network signatures                      | Quarantine + root-cause hypothesis                      | N/A                                       | Triage when ready  |
+| UNCLASSIFIED              | Confidence below threshold                                                  | Quarantine + escalate                                   | N/A                                       | Review             |
 
 Bias rule: when signals conflict, prefer the action lower in destructiveness. Healing requires the highest confidence; doing nothing requires none.
 
@@ -150,24 +159,24 @@ type Classification =
 interface Project {
   id: string;
   org: OrgRef;
-  testRepo: RepoRef;            // where tests live, PRs go here
-  appRepo?: RepoRef;            // optional but unlocks diff-based diagnosis
+  testRepo: RepoRef; // where tests live, PRs go here
+  appRepo?: RepoRef; // optional but unlocks diff-based diagnosis
   ciProvider: 'github-actions' | 'gitlab-ci' | 'other';
   framework: 'playwright' | 'cypress';
-  policies: MergePolicy;        // auto-merge opt-in, deletion gates, confidence thresholds
+  policies: MergePolicy; // auto-merge opt-in, deletion gates, confidence thresholds
 }
 
 interface TestRun {
   id: string;
   projectId: string;
   commitSha: string;
-  reportArtifacts: ArtifactRef[];   // playwright report, traces, screenshots
+  reportArtifacts: ArtifactRef[]; // playwright report, traces, screenshots
   results: TestResult[];
   startedAt: Date;
 }
 
 interface TestResult {
-  testId: string;                   // stable identity across runs (file + title hash)
+  testId: string; // stable identity across runs (file + title hash)
   status: 'passed' | 'failed' | 'skipped' | 'quarantined';
   failure?: FailureEvidence;
 }
@@ -185,20 +194,21 @@ interface Diagnosis {
   testId: string;
   runId: string;
   classification: Classification;
-  confidence: number;               // 0..1, thresholds set per project policy
-  evidence: EvidenceBundle;         // app diff, run history stats, intent refs
+  confidence: number; // 0..1, thresholds set per project policy
+  evidence: EvidenceBundle; // app diff, run history stats, intent refs
   decidedAction: AgentAction;
 }
 
 type AgentAction =
-  | { kind: 'HEAL'; pr: PullRequestRef }                    // benign drift
-  | { kind: 'PROPOSE_REWRITE'; pr: PullRequestRef }         // behavior change
+  | { kind: 'HEAL'; pr: PullRequestRef } // benign drift
+  | { kind: 'PROPOSE_REWRITE'; pr: PullRequestRef } // behavior change
   | { kind: 'REPORT_REGRESSION'; report: RegressionReport }
   | { kind: 'QUARANTINE'; hypothesis: string }
-  | { kind: 'RECOMMEND_REMOVAL'; rationale: string }        // human-only execution
+  | { kind: 'RECOMMEND_REMOVAL'; rationale: string } // human-only execution
   | { kind: 'ESCALATE'; reason: string };
 
-interface IntentArtifact {          // ground truth for generation + intent-aware healing
+interface IntentArtifact {
+  // ground truth for generation + intent-aware healing
   id: string;
   projectId: string;
   source: 'upload' | 'jira' | 'confluence';
@@ -210,11 +220,11 @@ interface IntentArtifact {          // ground truth for generation + intent-awar
 interface SuiteHealthSnapshot {
   projectId: string;
   window: DateRange;
-  autoHealRate: number;             // healed with zero human time / total breaks
-  falseGreenCount: number;          // must remain 0; tracked as an alarm, not a metric to optimize
+  autoHealRate: number; // healed with zero human time / total breaks
+  falseGreenCount: number; // must remain 0; tracked as an alarm, not a metric to optimize
   regressionsCaught: number;
   quarantineBacklog: number;
-  meanTimeToGreen: number;          // hours
+  meanTimeToGreen: number; // hours
 }
 ```
 
@@ -252,6 +262,7 @@ Customer CI ──webhook/report──▶ Ingestion ──▶ Diagnosis Engine �
 9. **Reporting and dashboard.** Suite-health snapshots, regression reports, quarantine tracking. Web app.
 
 **Cross-cutting:**
+
 - **Queue-based, event-driven core** (test runs arrive in bursts; diagnosis and authoring are slow, expensive jobs).
 - **Multi-tenancy isolation:** per-tenant encryption of repo credentials and session state; agents run in isolated sandboxes per customer; customer code never enters shared model fine-tuning.
 - **Audit log of every agent action,** because the product's pitch is trust and the audit trail is the receipt.
@@ -294,12 +305,14 @@ The full runbook lives in `GenFixs-experiment-plan.md`. Summary of the gate:
 ## 15. Success metrics
 
 **Leading (days to weeks):**
+
 - Time from repo connection to first merged GenFixs PR (target: under 7 days, stretch: under 48 hours).
 - Auto-heal rate on `BENIGN_DRIFT` (target set by experiment; measure weekly).
 - Classification precision on human-audited samples (target: >90% on drift vs. behavior; 100% refusal on seeded regressions in internal red-team runs).
 - PR acceptance rate without modification (target: >80%).
 
 **Lagging (weeks to months):**
+
 - False greens in production usage: 0, tracked as an alarm with incident review, never traded off.
 - Engineer hours on test maintenance per month, before vs. after (customer-reported).
 - Quarantine backlog trend per customer (should trend down or stay triaged).
@@ -317,11 +330,13 @@ The full runbook lives in `GenFixs-experiment-plan.md`. Summary of the gate:
 ## 17. Open questions
 
 **Blocking (answer before or during Phase 1):**
+
 - Engineering: what exact signal set distinguishes `BENIGN_DRIFT` from `BEHAVIOR_CHANGE` at >90% precision, and what confidence thresholds gate each action? (The experiment informs this; the classifier design decides it.)
 - Engineering: verification sandbox strategy when the customer has no staging URL or ephemeral environments. What is the minimum viable verification?
 - Product: what is the addressable auto-fix rate from the experiment, and does it support a category product or force a repositioning?
 
 **Non-blocking:**
+
 - Product: exact subscription sizing dimension (active tests vs. monitored runs vs. seats).
 - Engineering: test identity stability strategy when files/titles are refactored (content-hash vs. annotation-based IDs).
 - Legal/Security: SOC 2 timeline; data-residency requirements from design partners; explicit "customer code never trains shared models" guarantee wording.

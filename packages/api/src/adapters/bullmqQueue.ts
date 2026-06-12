@@ -44,6 +44,9 @@ export class BullMqQueue implements QueuePort {
   }
 
   async close(): Promise<void> {
-    await Promise.all([...this.workers.map((w) => w.close()), ...[...this.queues.values()].map((q) => q.close())]);
+    await Promise.all([
+      ...this.workers.map((w) => w.close()),
+      ...[...this.queues.values()].map((q) => q.close()),
+    ]);
   }
 }

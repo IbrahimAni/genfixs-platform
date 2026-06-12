@@ -1,11 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  Navigate,
-  NavLink,
-  Route,
-  Routes,
-  useParams,
-} from 'react-router-dom';
+import { Navigate, NavLink, Route, Routes, useParams } from 'react-router-dom';
 import { api, type ProjectSummary } from './lib/api';
 import { DiagnosisPage } from './pages/DiagnosisPage';
 import { FailuresPage } from './pages/FailuresPage';
@@ -74,11 +68,14 @@ export function App() {
   if (error)
     return (
       <div className="grid min-h-screen place-items-center text-sm text-ink-500">
-        Could not reach the GenFixs API. Is it running? <span className="ml-2 font-mono text-xs">{error}</span>
+        Could not reach the GenFixs API. Is it running?{' '}
+        <span className="ml-2 font-mono text-xs">{error}</span>
       </div>
     );
   if (!projects)
-    return <div className="grid min-h-screen place-items-center text-sm text-ink-400">Loading…</div>;
+    return (
+      <div className="grid min-h-screen place-items-center text-sm text-ink-400">Loading…</div>
+    );
   if (projects.length === 0)
     return (
       <div className="grid min-h-screen place-items-center text-sm text-ink-500">

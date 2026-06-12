@@ -1,5 +1,9 @@
 import type { EvidenceBundle } from '@genfixs/domain';
-import { detectSelectorRename, extractSelectors, isPureSelectorDiff } from '@genfixs/evidence-builder';
+import {
+  detectSelectorRename,
+  extractSelectors,
+  isPureSelectorDiff,
+} from '@genfixs/evidence-builder';
 
 export interface PrefilterResult {
   classification: 'FLAKY_NONDETERMINISTIC' | 'BENIGN_DRIFT';

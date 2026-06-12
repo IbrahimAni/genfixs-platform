@@ -39,7 +39,9 @@ export function parseJUnitReport(xml: string): TestResult[] {
           typeof failureNode === 'object' ? (failureNode as Record<string, unknown>) : {};
         const message = String(
           failureObj['@_message'] ??
-            (typeof failureNode === 'string' ? failureNode : failureObj['#text'] ?? 'Test failed'),
+            (typeof failureNode === 'string'
+              ? failureNode
+              : (failureObj['#text'] ?? 'Test failed')),
         );
         const text = typeof failureObj['#text'] === 'string' ? failureObj['#text'] : '';
         results.push({

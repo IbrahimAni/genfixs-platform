@@ -67,7 +67,9 @@ export function SettingsPage({ projectId }: { projectId: string }) {
               {settings.verificationBaseUrl ? (
                 <Mono>{settings.verificationBaseUrl}</Mono>
               ) : (
-                <span className="text-ink-400">none — heals cannot verify, so none will surface</span>
+                <span className="text-ink-400">
+                  none — heals cannot verify, so none will surface
+                </span>
               )}
             </dd>
           </dl>
@@ -115,9 +117,14 @@ export function SettingsPage({ projectId }: { projectId: string }) {
           </p>
           <div className="flex flex-col gap-2">
             {(
-              Object.keys(THRESHOLD_LABELS) as (keyof Settings['policies']['confidenceThresholds'])[]
+              Object.keys(
+                THRESHOLD_LABELS,
+              ) as (keyof Settings['policies']['confidenceThresholds'])[]
             ).map((key) => (
-              <label key={key} className="grid grid-cols-[16rem_1fr_3rem] items-center gap-3 text-sm">
+              <label
+                key={key}
+                className="grid grid-cols-[16rem_1fr_3rem] items-center gap-3 text-sm"
+              >
                 <span className="text-ink-700">{THRESHOLD_LABELS[key]}</span>
                 <input
                   type="range"

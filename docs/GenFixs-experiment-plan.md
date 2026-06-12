@@ -1,6 +1,6 @@
 # GenFixs: Ad Hoc Test-Maintenance Experiment
 
-*Goal: prove the core bet before building the platform. The bet is that GenFixs can look at a wall of failing tests with no hints and correctly decide, for each one, whether to heal it, propose a change for review, refuse to touch it, or escalate, without ever turning a real bug green.*
+_Goal: prove the core bet before building the platform. The bet is that GenFixs can look at a wall of failing tests with no hints and correctly decide, for each one, whether to heal it, propose a change for review, refuse to touch it, or escalate, without ever turning a real bug green._
 
 The experiment succeeds when the agent correctly sorts a blind mix of changes, and above all when it refuses to heal the real bug you plant. It does not succeed merely by fixing breaks you pointed it at.
 
