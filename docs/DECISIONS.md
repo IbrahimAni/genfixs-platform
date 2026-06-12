@@ -1,0 +1,16 @@
+# GenFixs: Open Interpretation Decisions
+
+Log of decisions made where the spec is ambiguous or silent. Spec (`GenFixs-product-development-document.md`) wins wherever it speaks; entries here cover the gaps.
+
+| # | Decision | Rationale | Spec ref |
+|---|---|---|---|
+| D1 | Test identity = SHA-256 hash of `filePath + "::" + fullTitle`. | Spec §17 leaves content-hash vs. annotation IDs open; file+title hash is the spec's own §9 hint ("file + title hash") and needs no repo instrumentation. Refactor-resilience deferred. | §9, §17 |
+| D2 | Queue: BullMQ on Redis, behind a `Queue` interface with an in-memory fake. | Spec says "queue-based, event-driven"; prompt allows BullMQ for v1. Interface keeps it swappable. | §10 |
+| D3 | Verification with no staging URL: heal degrades to quarantine/escalate rather than surfacing an unverified PR. | Spec §17 flags this open; "a heal that does not verify green is never shown" (§10.7) is absolute, so no-environment means no PR. | §10.7, §17 |
+| D4 | Deterministic pre-filter thresholds (v1): flaky if testId has ≥2 pass→fail flips in last 10 runs on unchanged test code, or error signature matches timing/network patterns; pure-selector drift requires locator-not-found error AND app diff confined to selector/attribute changes in test-relevant files. | Spec mandates pre-filters but gives no numbers; values are conservative and policy-tunable. | §10.4 |
+| D5 | Default confidence thresholds: heal ≥ 0.9, propose-rewrite ≥ 0.75, regression-report ≥ 0.6; below action threshold → UNCLASSIFIED → quarantine. Per-project overrides via `MergePolicy`. | Spec sets the bias rule (healing requires highest confidence) but not numbers. | §8 |
+| D6 | `MergePolicy` shape: `{ autoMergeBenignDrift: boolean (default false), confidenceThresholds, deletionRequiresSignoff: true (non-configurable) }`. | Deletion gate must not be policy-disableable — "gated hardest" is a principle, not a setting. | §6.4, §8 |
+| D7 | Demo/dev LLM classifier is a deterministic rule-based fake; real adapter targets Claude via the `LlmClassifier` interface. | Prompt requires clean stubs; determinism makes the orchestrator/classifier tests reliable. | §10.4 |
+| D8 | `TestFlowModel` persisted as ordered `{ stepIndex, action, selector, url }` records keyed by testId + runId, captured during verification runs. | §9 design note mandates persistence from day one but no shape; this is the minimal graph-ready substrate. | §9, §11 |
+| D9 | Regression report channel: GitHub issue only (Slack/Jira are P1). | §7 R5 says GitHub issue first. | R5 |
+| D10 | Assertion-untouched guard for heals implemented as a structural diff check rejecting any heal whose edit touches `expect(...)` calls or control flow, not just a prompt instruction. | R3 acceptance says "assertions are untouched"; enforcing in code follows the "encode principles as code" mandate. | R3 |
