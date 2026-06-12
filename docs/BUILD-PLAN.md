@@ -75,7 +75,7 @@ The shared vocabulary every service consumes. No service code before this.
 
 **Exit:** exhaustive policy test suite green; mutation-style negative tests prove the forbidden transitions are unrepresentable.
 
-### M6 — `fix-author` + verification sandbox (R3, R4, R8) `PLANNED`
+### M6 — `fix-author` + verification sandbox (R3, R4, R8) `DONE`
 - Heal author for `BENIGN_DRIFT`: minimal locator/selector-level edit, **assertions untouched** (enforced by a post-edit AST/diff guard that rejects any heal touching assertions or flow logic).
 - Rewrite author for `BEHAVIOR_CHANGE`: drafts updated test + diff-level evidence summary + "is this intended?" framing.
 - Style matching (R8): respect repo prettier/eslint configs, locator-strategy detection, run lint/format on output.

@@ -59,6 +59,12 @@ importers:
       '@genfixs/domain':
         specifier: workspace:*
         version: link:../domain
+      '@genfixs/evidence-builder':
+        specifier: workspace:*
+        version: link:../evidence-builder
+      prettier:
+        specifier: ^3.4.0
+        version: 3.8.4
 
   packages/ingestion:
     dependencies:
