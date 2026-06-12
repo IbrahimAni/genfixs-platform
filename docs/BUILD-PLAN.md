@@ -51,7 +51,7 @@ The shared vocabulary every service consumes. No service code before this.
 
 **Exit:** real Playwright report fixtures (passing, failing, mixed, with attachments) round-trip into normalized entities; JUnit fallback covered.
 
-### M3 — `evidence-builder` `PLANNED`
+### M3 — `evidence-builder` `DONE`
 - Assembles `EvidenceBundle`: app-repo diff last-green → failing commit (via `GitHubClient`, optional — absence degrades gracefully), run-history flake statistics per testId, linked intent artifacts, failure artifacts.
 - Pure-selector-diff detector (is the test-relevant diff exclusively locator/attribute changes?) — feeds the deterministic pre-filter.
 - Emits `evidence.ready`.
