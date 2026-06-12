@@ -66,7 +66,7 @@ The shared vocabulary every service consumes. No service code before this.
 
 **Exit (critical acceptance, R2):** app-logic break with untouched locators → `REAL_REGRESSION_SUSPECTED`, never `BENIGN_DRIFT`; renamed testid with cosmetic diff → `BENIGN_DRIFT` high confidence; low confidence → `UNCLASSIFIED`. Pre-filters never invoke the LLM stub when they match.
 
-### M5 — `action-orchestrator` (the trust core; spec §8) `PLANNED`
+### M5 — `action-orchestrator` (the trust core; spec §8) `DONE`
 - The §8 decision table as a pure deterministic policy function; exhaustive unit tests over **every classification × policy permutation × confidence band** — the most important tests in the codebase.
 - Explicit refusal tests: regression never healed; deletion never auto-merged; `BEHAVIOR_CHANGE` never auto-merge-eligible; `UNCLASSIFIED`/`FLAKY` → quarantine with hypothesis; bias rule (conflicting signals → less destructive action).
 - Auto-merge eligibility: only `BENIGN_DRIFT` + per-repo opt-in (off by default) + verified green.

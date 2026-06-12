@@ -22,4 +22,5 @@ export * from './ports/clock.js';
 export * from './fakes/inMemoryObjectStore.js';
 export * from './fakes/inMemoryQueue.js';
 export * from './fakes/inMemoryGitHubClient.js';
+export * from './authoredFix.js';
 export * from './fixtures.js';
