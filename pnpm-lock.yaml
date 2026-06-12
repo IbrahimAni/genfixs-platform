@@ -38,6 +38,9 @@ importers:
       '@genfixs/domain':
         specifier: workspace:*
         version: link:../domain
+      '@genfixs/evidence-builder':
+        specifier: workspace:*
+        version: link:../evidence-builder
 
   packages/domain:
     dependencies:

@@ -58,7 +58,7 @@ The shared vocabulary every service consumes. No service code before this.
 
 **Exit:** bundles built with and without app-repo connection; flake stats correct on seeded run history.
 
-### M4 — `diagnosis-engine` (R2) `PLANNED`
+### M4 — `diagnosis-engine` (R2) `DONE`
 - **Stage 1, deterministic pre-filters (no LLM):** flake-statistics filter (intermittent pass/fail history + timing/network error signatures → `FLAKY_NONDETERMINISTIC`); pure-selector-drift filter (selector-only app diff + locator-not-found error → `BENIGN_DRIFT` high confidence).
 - **Stage 2, LLM classification** for the ambiguous remainder, behind `LlmClassifier` interface (deterministic rule-based fake for tests/demo; real Claude adapter swappable). Output constrained to the §8 table vocabulary: classification + confidence + rationale.
 - Confidence thresholds come from project policy; **below threshold → `UNCLASSIFIED`**, always.
