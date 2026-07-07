@@ -5,10 +5,12 @@ import { fileURLToPath } from 'node:url';
 import cors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
 import { MergePolicySchema, ProjectSchema, quarantineAgeDays } from '@genfixs/domain';
+import { AuthorizationError, type PlatformContext } from '@genfixs/platform';
 import Fastify, { type FastifyInstance, type FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { createAppContextFromEnv, type RuntimeReport } from './config.js';
 import type { AppContext } from './context.js';
+import { registerPlatformRoutes } from './platformRoutes.js';
 
 const IngestBodySchema = z.object({
   commitSha: z.string(),
@@ -46,6 +48,7 @@ export interface ServerOptions {
   report?: RuntimeReport;
   apiToken?: string;
   webhookSecret?: string;
+  platform?: PlatformContext;
 }
 
 export function buildServer(ctx: AppContext, options: ServerOptions = {}): FastifyInstance {
@@ -89,6 +92,8 @@ export function buildServer(ctx: AppContext, options: ServerOptions = {}): Fasti
   app.get('/api/status', async () => {
     return options.report ?? { startedAt: new Date().toISOString(), integrations: [] };
   });
+
+  void registerPlatformRoutes(app, options.platform);
 
   // Onboarding: connect a project (R1).
   app.post('/api/projects', async (req, reply) => {
@@ -302,6 +307,9 @@ export function buildServer(ctx: AppContext, options: ServerOptions = {}): Fasti
     if (err instanceof z.ZodError) {
       return reply.code(400).send({ error: 'invalid request', issues: err.issues });
     }
+    if (err instanceof AuthorizationError) {
+      return reply.code(403).send({ error: 'forbidden', detail: err.message });
+    }
     return reply.code(500).send({ error: err instanceof Error ? err.message : 'internal error' });
   });
 
@@ -311,8 +319,15 @@ export function buildServer(ctx: AppContext, options: ServerOptions = {}): Fasti
 const isMain = process.argv[1]?.endsWith('server.ts') || process.argv[1]?.endsWith('server.js');
 if (isMain) {
   const { ctx, report } = await createAppContextFromEnv();
+  const platform =
+    process.env['DATABASE_URL'] !== undefined
+      ? await import('@genfixs/platform').then((m) =>
+          m.createPlatformContext(process.env['DATABASE_URL']!),
+        )
+      : undefined;
   const app = buildServer(ctx, {
     report,
+    ...(platform ? { platform } : {}),
     ...(process.env['GENFIXS_API_TOKEN'] ? { apiToken: process.env['GENFIXS_API_TOKEN'] } : {}),
     ...(process.env['GITHUB_WEBHOOK_SECRET']
       ? { webhookSecret: process.env['GITHUB_WEBHOOK_SECRET'] }

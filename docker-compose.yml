@@ -18,7 +18,9 @@ services:
       - redisdata:/data
 
   api:
-    build: .
+    build:
+      context: .
+      target: api
     depends_on:
       postgres:
         condition: service_healthy
@@ -38,6 +40,18 @@ services:
       - artifacts:/data
     ports:
       - '4000:4000'
+
+  web:
+    build:
+      context: .
+      target: web
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      GENFIXS_API_URL: http://api:4000
+    ports:
+      - '3000:3000'
 
 volumes:
   pgdata:

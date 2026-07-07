@@ -36,3 +36,5 @@ jobs:
           DATABASE_URL: postgres://genfixs:genfixs@localhost:5432/genfixs
           REDIS_URL: redis://localhost:6379
       - run: pnpm --filter @genfixs/web build
+      - run: docker build --target api -t genfixs-api:ci .
+      - run: docker build --target web -t genfixs-web:ci .

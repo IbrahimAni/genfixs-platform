@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@genfixs/domain": "workspace:*",
+    "@genfixs/platform": "workspace:*",
     "@genfixs/ingestion": "workspace:*",
     "@genfixs/evidence-builder": "workspace:*",
     "@genfixs/diagnosis-engine": "workspace:*",

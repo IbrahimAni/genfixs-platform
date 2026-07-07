@@ -2,8 +2,17 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "jsx": "react-jsx",
-    "types": []
+    "allowJs": true,
+    "esModuleInterop": true,
+    "incremental": true,
+    "jsx": "preserve",
+    "moduleResolution": "Bundler",
+    "plugins": [{ "name": "next" }],
+    "types": [],
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["next-env.d.ts", "app", "src", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }

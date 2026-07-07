@@ -1,7 +1,10 @@
 node_modules/
 dist/
+.next/
 coverage/
 *.log
+*.tsbuildinfo
 .env
 .turbo/
+.playwright-cli/
 dump.rdb
